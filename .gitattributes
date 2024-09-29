@@ -1,0 +1,19 @@
+* text=auto
+
+# Document
+*.md                                            text
+*.txt                                           text
+
+# Config
+*.json                                          text
+*.yaml                                          text
+*.yml                                           text
+
+# Shell
+*.sh                                            text
+
+# Source
+*.cc                                            text
+*.hh                                            text
+*.js                                            text
+*.ts                                            text

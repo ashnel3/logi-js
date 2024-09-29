@@ -1,0 +1,4 @@
+{
+  "entryPoints": ["./lib/index.ts", "./lib/gkey.ts", "./lib/lcd.ts", "./lib/led.ts"],
+  "out": "./docs"
+}

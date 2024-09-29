@@ -1,2 +1,3 @@
 # logi-js
-Node bindings for Logitech SDKs
+
+NodeJS bindings for [Logitech SDKs](https://www.logitechg.com/en-us/innovation/developer-lab.html)
