@@ -22,7 +22,6 @@ export const before = (name: string, cb: () => any): Plugin => ({
  * @see https://vitejs.dev/
  */
 export default defineConfig({
-  clearScreen: false,
   build: {
     lib: {
       entry: [
@@ -38,5 +37,14 @@ export default defineConfig({
       external: ['bindings'],
     },
   },
-  plugins: [before('cmake-js', () => void execSync('cmake-js build')), externals(), dts()],
+  plugins: [
+    before('cmake-js', () => void execSync('cmake-js build')),
+    externals(),
+    dts({
+      copyDtsFiles: true,
+    }),
+  ],
+  test: {
+    include: ['./lib/test/*.test.ts'],
+  },
 })
