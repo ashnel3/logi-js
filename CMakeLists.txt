@@ -15,6 +15,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 include_directories(${CMAKE_SOURCE_DIR}/node_modules/node-addon-api)
 include_directories(${CMAKE_JS_INC})
 
+if(NOT MSVC)
+    message(FATAL_ERROR "Error: Unsupported compiler, 'MSVC' is required!")
+endif()
+
 # === Fetch-Content ===
 
 FetchContent_Declare(
