@@ -3,9 +3,12 @@
 import { execSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
+import type { LogitechEnvironment } from './lib/types/env'
 
 import externals from 'rollup-plugin-node-externals'
 import dts from 'vite-plugin-dts'
+
+const { npm_package_version: PACKAGE_VERSION } = process.env
 
 /**
  * Vite before build plugin
@@ -22,6 +25,9 @@ export const before = (name: string, cb: () => any): Plugin => ({
  * @see https://vitejs.dev/
  */
 export default defineConfig({
+  define: {
+    PACKAGE_VERSION: JSON.stringify(PACKAGE_VERSION),
+  } satisfies LogitechEnvironment,
   build: {
     lib: {
       entry: [
