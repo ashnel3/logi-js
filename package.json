@@ -1,5 +1,5 @@
 {
-  "name": "logi-js",
+  "name": "logitech",
   "version": "1.0.0",
   "description": "Node bindings for Logitech SDKs",
   "main": "dist/index.js",
