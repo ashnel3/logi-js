@@ -3,6 +3,7 @@ node_modules/
 # Output
 build/
 dist/
+docs/
 
 # Lock Files
 package-lock.json
