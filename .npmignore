@@ -1,0 +1,14 @@
+*
+
+# Docs
+!LICENSE*
+!README.md
+
+# Build
+!build/Release/**/*
+!dist/**/*
+
+# Package
+!package.json
+!pnpm-lock.yaml
+!tsconfig.json
