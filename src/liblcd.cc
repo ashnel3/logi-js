@@ -1,68 +1,102 @@
-#include "Core.hh"
+#include "core.hh"
 #include "LogitechLCDLib.h"
 
 namespace LcdSdk {
   using namespace Napi;
 
-  static Boolean LcdInit(const CallbackInfo& info) {
-    auto Env = info.Env();
-    auto name = info[0].As<String>().Utf8Value();
-    int type = info[1].As<Number>().Int32Value();
-    return Boolean::New(Env, LogiLcdInit((wchar_t *) Util::to_wstring(name).c_str(), type));
-  }
+  typedef enum {
+    COLOR = LOGI_LCD_TYPE_COLOR,
+    MONO = LOGI_LCD_TYPE_MONO
+  } TYPE;
 
-  static Boolean LcdIsConnected(const CallbackInfo& info) {
-    auto env = info.Env();
-    int type = info[0].As<Number>().Int32Value();
-    return Boolean::New(env, LogiLcdIsConnected(type));
-  }
-
-  static Boolean LcdMonoSetText(const CallbackInfo& info) {
-    auto Env = info.Env();
-    auto line = info[0].As<Number>().Int32Value();
-    std::string text = info[1].As<String>().Utf8Value();
+  Boolean init(const CallbackInfo& Info) {
+    auto name = ParamRequire<String>(Info, 0).Utf8Value();
+    int type = ParamRequire<Number>(Info, 1).Int32Value();
     return Boolean::New(
-      Env,
-      LogiLcdMonoSetText(line, (wchar_t*) Util::to_wstring(text).c_str())
+      Info.Env(),
+      LogiLcdInit((wchar_t *) ConvWStr(name), type)
     );
   }
 
-  static void LcdUpdate(const CallbackInfo& info) {
+  template <TYPE T>
+  Boolean setText(const CallbackInfo& Info);
+
+  template <>
+  Boolean setText<TYPE::COLOR>(const CallbackInfo& Info) {
+    int line = ParamRequire<Number>(Info, 0).Int32Value();
+    auto text = ParamRequire<String>(Info, 1).Utf8Value();
+    // TODO: add optional params
+    return Boolean::New(
+      Info.Env(),
+      LogiLcdColorSetText(line, (wchar_t *) ConvWStr(text))
+    );
+  }
+
+  template <>
+  Boolean setText<TYPE::MONO>(const CallbackInfo& Info) {
+    int line = ParamRequire<Number>(Info, 0).Int32Value();
+    auto text = ParamRequire<String>(Info, 1).Utf8Value();
+    return Boolean::New(
+      Info.Env(),
+      LogiLcdMonoSetText(line, (wchar_t*) ConvWStr(text))
+    );
+  }
+
+  void update(const CallbackInfo& Info) {
     LogiLcdUpdate();
   }
 
-  static void LcdShutdown(const CallbackInfo& info) {
+  void shutdown(const CallbackInfo& Info) {
     LogiLcdShutdown();
   }
 
-  static inline Object InitAll(Env Env, Object Exports) {
-    // lcd types
-    Object Types = Object::New(Env);
-    Types.Set("color", LOGI_LCD_TYPE_COLOR);
-    Types.Set("mono", LOGI_LCD_TYPE_MONO);
-    Exports.Set("types", Types);
+  template <TYPE T>
+  inline Object initGroup(
+    Env env,
+    std::pair<int, int> size
+  ) {
+    return Initializer::Map(
+      Object::New(env),
+      {
+        {
+          "isConnected",
+          Function::New(env, [&](CallbackInfo& Info) -> Boolean {
+            return Boolean::New(Info.Env(), LogiLcdIsConnected(T));
+          })
+        },
+        { "setText", Function::New(env, setText<T>) },
+        { "size", Initializer::Box::New(env, size) },
+        { "type", Number::New(env, T) },
+      }
+    );
+  }
 
-    // display sizes
-    Object SizeColor = Object::New(Env);
-    Object SizeMono = Object::New(Env);
-    Object Size = Object::New(Env);
-    SizeColor.Set("height", LOGI_LCD_COLOR_HEIGHT);
-    SizeColor.Set("width", LOGI_LCD_COLOR_WIDTH);
-    SizeMono.Set("height", LOGI_LCD_MONO_HEIGHT);
-    SizeMono.Set("width", LOGI_LCD_MONO_WIDTH);
-    Size.Set("color", SizeColor);
-    Size.Set("mono", SizeMono);
-    Exports.Set("sizes", Size);
-
-    // functions
-    Exports.Set("LcdInit", Function::New(Env, LcdInit));
-    Exports.Set("LcdIsConnected", Function::New(Env, LcdIsConnected));
-    Exports.Set("LcdMonoSetText", Function::New(Env, LcdMonoSetText));
-    Exports.Set("LcdUpdate", Function::New(Env, LcdUpdate));
-    Exports.Set("LcdShutdown", Function::New(Env, LcdShutdown));
-
-    // return exports
-    return Exports;
+  inline Object InitAll(Env env, Object exports) {
+    return Initializer::Map(
+      exports,
+      {
+        // general methods
+        { "init", Function::New(env, init) },
+        {
+          "isConnected",
+          Function::New(env, [](const CallbackInfo& Info) -> Boolean {
+            int type = ParamRequire<Number>(Info, 0).Int32Value();
+            return Boolean::New(Info.Env(), LogiLcdIsConnected(type));
+          })
+        },
+        { "update", Function::New(env, update) },
+        { "shutdown", Function::New(env, shutdown) },
+        // lcd groups
+        {
+          "color",
+          initGroup<TYPE::COLOR>(env, { LOGI_LCD_COLOR_WIDTH, LOGI_LCD_COLOR_HEIGHT })
+        },
+        {
+          "mono",
+          initGroup<TYPE::MONO>(env, { LOGI_LCD_MONO_WIDTH, LOGI_LCD_MONO_HEIGHT })
+        }
+      }
+    );
   }
 }
 

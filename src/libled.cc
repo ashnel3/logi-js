@@ -1,4 +1,4 @@
-#include "Core.hh"
+#include "core.hh"
 #include "LogitechLEDLib.h"
 
 namespace LedSdk {

@@ -1,4 +1,4 @@
-#include "Core.hh"
+#include "core.hh"
 #include "LogitechGkeyLib.h"
 
 namespace GKeySdk {

@@ -2,10 +2,10 @@
 
 # Docs
 !LICENSE*
-!README.md
+!README*
 
 # Build
-!build/Release/**/*
+!build/Release/**/*.node
 !dist/**/*
 
 # Package
